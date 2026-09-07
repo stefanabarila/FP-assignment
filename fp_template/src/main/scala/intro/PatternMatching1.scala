@@ -99,7 +99,11 @@ object PatternMatching1 {
    *
    *         Hint: you can use if statements in pattern matching.
    */
-  def firstDivByX(xs: List[Int], n: Int): OptionalNum = ???
+  def firstDivByX(xs: List[Int], n: Int): OptionalNum = xs match {
+    case x :: t if x % n == 0 => Num(x)
+    case x :: t => firstDivByX(t, n)
+    case Nil => Nothing()
+  }
 
   /** Q4 (2p)
    * Implement this function that returns a list of only the even numbers.
@@ -108,5 +112,9 @@ object PatternMatching1 {
    * @param xs the list to process.
    * @return the list of all even numbers in xs.
    */
-  def onlyEvenNumbers(xs: List[OptionalNum]): List[Int] = ???
+  def onlyEvenNumbers(xs: List[OptionalNum]): List[Int] = xs match{
+    case Nil => Nil
+    case Num(x) :: xs if x % 2 == 0 => x :: onlyEvenNumbers(xs)
+    case _ :: xs => onlyEvenNumbers(xs)
+  }
 }
