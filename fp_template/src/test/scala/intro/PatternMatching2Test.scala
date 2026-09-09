@@ -18,6 +18,15 @@ class PatternMatching2Test extends FunSuite{
     }
   }
 
+  test("myForAll") {
+    val startsWithS = (s: String) => s.startsWith("s")
+    assertResult(true){
+      myForAll(List("sssss", "sign", "start", "strong", "system"), startsWithS)
+    }
+    assertResult(false){
+      myForAll(List("Sssss", "", "start", "strong", "system"), startsWithS)
+    }
+  }
 
   test("lastElem") {
     assertResult(Some("yes")) {
