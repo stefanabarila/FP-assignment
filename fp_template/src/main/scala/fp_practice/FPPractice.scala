@@ -15,7 +15,17 @@ object FPPractice {
       * @param xs the list to process.
       * @return the sum of the first 10 numbers larger than 25.
       */
-    def first10Above25(xs: List[Int]): Int = ???
+    def first10Above25(xs: List[Int]): Int = {
+
+        def helper(xs: List[Int], n : Int) : Int = (xs, n) match{
+          case (Nil, _) => 0
+          case (_, 0) => 0
+          case (x :: xs, n) if x > 25 => x + helper(xs, n - 1)
+          case (x :: xs, n) => helper(xs, n)
+      }
+
+      helper(xs, 10)
+    }
 
     /** Q21 (5p)
       * Provided with a list of all grades for each student of a course,
@@ -25,7 +35,20 @@ object FPPractice {
       * @param grades a list containing a list of grades for each student.
       * @return the amount of students with passing grades.
       */
-    def passingStudents(grades: List[List[Int]]): Int = ???
+    def passingStudents(grades: List[List[Int]]): Int = grades match {
+        case Nil => 0
+        case Nil :: xs => passingStudents(xs)
+        case x :: xs =>
+          val sum = x.sum
+          val len = x.size
+          val avg = sum.toDouble / len
+          val hasLow = x.exists((g : Int) => g < 4)
+
+        if(avg >= 5.75 && !hasLow)
+          1 + passingStudents(xs)
+        else
+          passingStudents(xs)
+    }
 
     /** Q22 (6p)
       * Return the length of the first list of which the first item's value is equal to the sum of all other items.
@@ -36,5 +59,16 @@ object FPPractice {
       * Read the documentation on the `Option` class to find out what you should return.
       * Hint: it is very similar to the `OptionalInt` you saw earlier.
       */
-    def headSumsTail(xs: List[List[Int]]): Option[Int] = ???
+    def headSumsTail(xs: List[List[Int]]): Option[Int] = xs match{
+      case Nil => None
+      case Nil :: xs => headSumsTail(xs)
+      case x :: xs =>
+        val sum = x.sum
+        val first = x.head
+
+        if( sum - first == first)
+          Some(x.size)
+        else
+          headSumsTail(xs)
+    }
 }
