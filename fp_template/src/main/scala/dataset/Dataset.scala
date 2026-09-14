@@ -25,7 +25,16 @@ object Dataset {
    * @param input the list of commits to process.
    * @return the average amount of additions in the commits that have stats data.
    */
-  def avgAdditions(input: List[Commit]): Int = ???
+  def avgAdditions(input: List[Commit]): Int = {
+    def f(x: Commit): Int = {
+      x.stats match {
+        case None => 0
+        case Some(v) => v.additions
+      }
+    }
+    val additions = input.map(f)
+    additions.sum / additions.size
+  }
 
   /** Q24 (4p)
    * Find the hour of day (in 24h notation, UTC time) during which the most javascript (.js) files are changed in commits.
@@ -36,7 +45,21 @@ object Dataset {
    * @param input list of commits to process.
    * @return the hour and the amount of files changed during this hour.
    */
-  def jsTime(input: List[Commit]): (Int, Int) = ???
+  def jsTime(input: List[Commit]): (Int, Int) = {
+    val sdf = new SimpleDateFormat("HH")
+    sdf.setTimeZone(new SimpleTimeZone(0, "UTC"))
+    val hourlyJsCounts = input.map { c =>
+      val hour = sdf.format(c.commit.committer.date).toInt
+      val jsFilesCount = c.files.count(file => file.filename.exists(_.endsWith(".js")))
+      (hour, jsFilesCount)
+    }
+    val groupedByHour = hourlyJsCounts.groupBy(_._1)
+    val totalJsPerHour = groupedByHour.map { case (hour, counts) =>
+      val totalFiles = counts.map(_._2).sum
+      (hour, totalFiles)
+    }
+    totalJsPerHour.maxBy(_._2)
+  }
 
 
   /** Q25 (5p)
@@ -48,7 +71,10 @@ object Dataset {
    * @param repo  the repository name to consider.
    * @return the name and amount of commits for the top committer.
    */
-  def topCommitter(input: List[Commit], repo: String): (String, Int) = ???
+  def topCommitter(input: List[Commit], repo: String): (String, Int) = {
+    val a = input.filter(c => c.url.contains(repo)).map(c => c.commit.author.name)
+    a.groupBy(n => n).map{case (a, b) => (a, b.size)}.maxBy(_._2)
+  }
 
   /** Q26 (9p)
    * For each repository, output the name and the amount of commits that were made to this repository in 2019 only.
@@ -60,7 +86,18 @@ object Dataset {
    *         Example output:
    *         Map("KosDP1987/students" -> 1, "giahh263/HQWord" -> 2)
    */
-  def commitsPerRepo(input: List[Commit]): Map[String, Int] = ???
+  def commitsPerRepo(input: List[Commit]): Map[String, Int] = {
+    val sdf = new SimpleDateFormat("YYYY")
+    sdf.setTimeZone(new SimpleTimeZone(0, "UTC"))
+    val a = input.filter{c =>
+      val y = sdf.format(c.commit.committer.date).toInt
+      y == 2019}
+
+    a.groupBy{c =>
+      val parts = c.url.split("/")
+      s"${parts(4)}/${parts(5)}"}
+      .map{case (a, b) => (a, b.size)}
+  }
 
 
   /** Q27 (9p)
@@ -69,7 +106,10 @@ object Dataset {
    * @param input the list of commits to process.
    * @return 5 tuples containing the file extension and frequency of the most frequently appeared file types, ordered descendingly.
    */
-  def topFileFormats(input: List[Commit]): List[(String, Int)] = ???
+  def topFileFormats(input: List[Commit]): List[(String, Int)] = {
+    val types = input.flatMap(c => c.files).flatMap(c => c.filename).map(c => c.split("\\.").last)
+    types.groupBy(identity).map{case (a, b) => (a, b.size)}.toList.sortWith((x, y) => x._2 > y._2).take(5)
+  }
 
 
   /** Q28 (9p)
@@ -85,5 +125,25 @@ object Dataset {
    *
    * Hint: for the time, use `SimpleDateFormat` and `SimpleTimeZone`.
    */
-  def mostProductivePart(input: List[Commit]): (String, Int) = ???
+  def mostProductivePart(input: List[Commit]): (String, Int) = {
+    val sdf = new SimpleDateFormat("HH")
+    sdf.setTimeZone(new SimpleTimeZone(0, "UTC"))
+
+    def getPartOfDay(hour: Int): String = {
+      if (hour >= 5 && hour < 12) "morning"
+      else if (hour >= 12 && hour < 17) "afternoon"
+      else if (hour >= 17 && hour < 21) "evening"
+      else "night"
+    }
+
+    val dayParts = input.map { c =>
+      val hour = sdf.format(c.commit.committer.date).toInt
+      getPartOfDay(hour)
+    }
+
+    dayParts
+      .groupBy(identity)
+      .map { case (part, list) => (part, list.size) }
+      .maxBy(_._2)
+  }
 }
