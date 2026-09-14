@@ -1,5 +1,7 @@
 package fp_functions
 
+import scala.::
+
 
 /**
  * This part is about implementing several functions that are very common in functional programming.
