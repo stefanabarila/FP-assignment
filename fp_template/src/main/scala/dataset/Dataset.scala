@@ -26,14 +26,9 @@ object Dataset {
    * @return the average amount of additions in the commits that have stats data.
    */
   def avgAdditions(input: List[Commit]): Int = {
-    def f(x: Commit): Int = {
-      x.stats match {
-        case None => 0
-        case Some(v) => v.additions
-      }
-    }
-    val additions = input.map(f)
-    additions.sum / additions.size
+    val additions = input.flatMap(_.stats).map(_.additions)
+    if (additions.isEmpty) 0
+    else additions.sum / additions.size
   }
 
   /** Q24 (4p)
@@ -87,7 +82,7 @@ object Dataset {
    *         Map("KosDP1987/students" -> 1, "giahh263/HQWord" -> 2)
    */
   def commitsPerRepo(input: List[Commit]): Map[String, Int] = {
-    val sdf = new SimpleDateFormat("YYYY")
+    val sdf = new SimpleDateFormat("yyyy")
     sdf.setTimeZone(new SimpleTimeZone(0, "UTC"))
     val a = input.filter{c =>
       val y = sdf.format(c.commit.committer.date).toInt
