@@ -65,7 +65,7 @@ object PatternMatching2 {
      */
     def drunkWords(xs: List[String]) : List[String] = xs match {
       case Nil => Nil
-      case h :: t => drunkWords(t) :+ h.reverse
+      case h :: t => drunkWords(t) ::: List(h.reverse)
     }
 
 
